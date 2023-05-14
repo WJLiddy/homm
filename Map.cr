@@ -41,6 +41,7 @@ class Map
     spawn_cities()
     spawn_farms()
     spawn_groundresources()
+    add_bridges()
     mirror()
   end
 
@@ -161,6 +162,19 @@ class Map
     end
   end
 
+  def add_bridges()
+    @size.times do |x|
+      @size.times do |y|
+        if (@tiles[x][y] == TileType::Water)
+          # check if we can place a bridge
+          if (y > 0 && @tiles[x][y-1] == TileType::Open && y < @size-1 && @tiles[x][y+1] == TileType::Open && @hr.rint(0, 4) == 0)
+            @tiles[x][y] = TileType::Open
+          end
+        end
+      end
+    end
+  end
+
   def mirror
     # mirror the map
     @size.times do |x|
@@ -168,8 +182,17 @@ class Map
         @tiles[@size - x - 1][y] = @tiles[x][y]
       end
     end
+
     @cities.each do |k, v|
       @cities[Vector2.new(@size - k.x - 1, k.y)] = v
+    end
+
+    @farms.each do |k, v|
+      @farms[Vector2.new(@size - k.x - 1, k.y)] = v
+    end
+
+    @groundresources.each do |k, v|
+      @groundresources[Vector2.new(@size - k.x - 1, k.y)] = v
     end
 
     @team1spawn.each do |k|
