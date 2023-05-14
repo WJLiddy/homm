@@ -3,7 +3,7 @@ require "./Player"
 require "./Hero"
 require "json"
 
-# Entire game state for Heroes of Might and Memes game
+# HEROES OF TIME AND TERRIOTORY
 class Game
   enum Resource
     Bitcoin
