@@ -1,5 +1,9 @@
 # class for a player
 class Player
+    property bitcoin : Int32
+    property pot : Int32
+    property cereal : Int32
+    
     getter heroes : Hash(Vector2, Hero)
     def initialize(name : String)
         @name = name

@@ -2,6 +2,7 @@ require "./Map"
 require "./Player"
 require "./Hero"
 require "json"
+require "./HOMMCONSTS"
 
 # HEROES OF TIME AND TERRIOTORY
 class Game
@@ -17,6 +18,7 @@ class Game
     MissingJSONKey
     InvalidTarget
     InvalidMove
+    InsufficientResources
   end
 
   def initialize(seed : Int32, playersPerTeam : Int32)
@@ -87,13 +89,38 @@ class Game
     # move seems good.
     player = team == 1 ? @team1[playerid] : @team2[playerid]
     hero = player.heroes[targetvec]
+
+    # has points
+    if(!hero.move())
+      return CommandErrors::InsufficientResources
+    end
     player.heroes.delete(targetvec)
     player.heroes[newpos] = hero
+
+    # check if we picked something up
+    item_at_feet = @map.take_resource(newpos)
+    if(item_at_feet != nil) 
+      if(item_at_feet == Resource::Bitcoin)
+        player.bitcoin += HOMMCONSTS::BITCOIN_GROUNDITEM_INCOME
+      end
+      if(item_at_feet == Resource::Pot)
+        player.pot += HOMMCONSTS::POT_GROUNDITEM_VALUE
+      end
+      if(item_at_feet == Resource::Cereal)
+        player.cereal += HOMMCONSTS::CEREAL_FARM_INCOME
+      end
+    end
+
+    # check if we can take over a city
+    if(@map.cities.has_key?(newpos))
+      @map.cities[newpos].owner = player
+    end
+
     return CommandErrors::NoError
   end
 
   def build_command(value : JSON::Any, player : Int32, team : Int32)
-          # check if valid player
+      # check if valid player
       # check if valid city
       # check if valid unlock
       # check if build finished today.
@@ -167,6 +194,15 @@ class Game
     return nil
   end
 
+
+  def get_gamestate_json() : String
+    string = JSON.build do |json|
+      json.object do
+        json.field "tiles", @map.tiles
+      end
+    end
+  end
+
   def print_world_map
     @map.size.times do |y|
       @map.size.times do |x|
@@ -175,7 +211,6 @@ class Game
           print "h"
           next
         end
-        
 
         # Cities
         if (@map.cities.has_key?(Vector2.new(x, y)))
@@ -218,6 +253,8 @@ class Game
   end
 end
 
+#################################
+
 g = Game.new(0, 1)
 g.print_world_map
 
@@ -243,4 +280,5 @@ end
 
 print(string)
 print(g.accept_command(string))
-g.print_world_map
+puts 
+print(g.get_gamestate_json)

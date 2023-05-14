@@ -1,4 +1,5 @@
 class City
+    property owner : Player | Nil
     def initialize()
         # 1 - 3, how fast can you mine bitcoins?
         @bitcoin_level = 1
@@ -10,5 +11,9 @@ class City
         @unit_unlocks = [true,false,false,false,false]
         # which units are available to train?
         @units_available = [0,0,0,0,0]
+        # which units are garrisoned?
+        @units_garrisoned = [0,0,0,0,0]
+        # who owns the city?
+        @owner = nil
     end
 end
