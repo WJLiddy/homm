@@ -1,3 +1,5 @@
+require "./Hero"
+require "./Vector2"
 # class for a player
 class Player
     property bitcoin : Int32

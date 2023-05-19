@@ -1,6 +1,7 @@
 require "./HOMMCONSTS"
 
 class Hero
+  property unit_stacks : Array(Int32)
   def initialize()
     @move_points = 20
     @skill_attack = 0

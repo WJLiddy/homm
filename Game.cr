@@ -280,5 +280,5 @@ end
 
 print(string)
 print(g.accept_command(string))
-puts 
+g.print_world_map
 print(g.get_gamestate_json)
