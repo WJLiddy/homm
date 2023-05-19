@@ -4,6 +4,11 @@ module HOMMCONSTS
     HERO_MAX_MOVE = 30
     HERO_MOVE_COST = 4
 
+    # Hero Names (12)
+    HERO_NAMES = ["Ayyden","Fiona","Sorpigal","Jimmy","Magog","Elige","Vinny","Aristocrat","Woodcut","Obama","Discord","Beep"]
+    # City Names (12)
+    CITY_NAMES = ["Castine","Eldorado","New Paris","West Alex","Gratis","Camden","Morning Sun","Darrtown","Lewisburg","Seven Mile","Millville","New Hope"]
+
     # Resource Incomes (1/100 of homm for reference)
     CITY_BITCOIN_INCOME_LEVEL1 = 5
     CITY_BITCOIN_INCOME_LEVEL2 = 10
