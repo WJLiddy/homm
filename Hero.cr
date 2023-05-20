@@ -18,4 +18,9 @@ class Hero
     @move_points -= HOMMCONSTS::HERO_MOVE_COST
     return true
   end
+
+  def refresh_points()
+    @move_points += HOMMCONSTS::HERO_MOVE_RECOVERY
+    @move_points = [@move_points, HOMMCONSTS::HERO_MAX_MOVE].min
+  end
 end

@@ -21,6 +21,10 @@ class Game
     InsufficientResources
   end
 
+  getter map : Map
+  getter team1 : Array(Player)
+  getter team2 : Array(Player)
+
   def initialize(seed : Int32, playersPerTeam : Int32)
     @random = HommRandom.new(seed)
     @team1 = [] of Player
@@ -116,6 +120,12 @@ class Game
       @map.cities[newpos].owner = player
     end
 
+    # check if we can take over a farm
+    if(@map.farms.has_key?(newpos))
+      print("!!farm taken!")
+      @map.farms[newpos] = {@map.farms[newpos][0], player}
+    end
+
     return CommandErrors::NoError
   end
 
@@ -179,8 +189,17 @@ class Game
     end
   end
 
-  def process_turn_start
+  def process_turn_start(team1 : Bool)
     # players get income from cities and resources
+    (team1 ? @team1 : @team2).each do |player|
+      player.bitcoin += HOMMCONSTS::CITY_BITCOIN_INCOME_LEVEL1 * @map.cities.count { |k, v| v.owner == player }
+      player.bitcoin += HOMMCONSTS::BITCOIN_FARM_INCOME * @map.farms.count { |k, v| v[0] == Resource::Bitcoin && v[1] == player }
+      player.pot += HOMMCONSTS::POT_FARM_INCOME * @map.farms.count { |k, v| v[0] == Resource::Pot && v[1] == player }
+      player.cereal += HOMMCONSTS::CEREAL_FARM_INCOME * @map.farms.count { |k, v| v[0] == Resource::Cereal && v[1] == player }
+      player.heroes.each do |pos, hero|
+        hero.refresh_points()
+      end
+    end
   end
 
   def get_hero_at(tpos : Vector2) : Hero | Nil
@@ -194,91 +213,22 @@ class Game
     return nil
   end
 
+  # later, add owner...
+  def cities_jsonable()
+    cities = Array(Tuple(Int32, Int32, City)).new
+    @map.cities.each do |pos, city|
+      cities << {pos.x, pos.y, city}
+    end
+    return cities
+  end
+
 
   def get_gamestate_json() : String
     string = JSON.build do |json|
       json.object do
         json.field "tiles", @map.tiles
-      end
-    end
-  end
-
-  def print_world_map
-    @map.size.times do |y|
-      @map.size.times do |x|
-        # Heroes
-        if(get_hero_at(Vector2.new(x, y)) != nil)
-          print "h"
-          next
-        end
-
-        # Cities
-        if (@map.cities.has_key?(Vector2.new(x, y)))
-          print "X"
-          next
-        end
-        # Farms
-        if (@map.farms.has_key?(Vector2.new(x, y)))
-          if (@map.farms[Vector2.new(x, y)][0] == Resource::Bitcoin)
-            print "B"
-          elsif (@map.farms[Vector2.new(x, y)][0] == Resource::Pot)
-            print "P"
-          elsif (@map.farms[Vector2.new(x, y)][0] == Resource::Cereal)
-            print "C"
-          end
-          next
-        end
-        # Ground
-        if (@map.groundresources.has_key?(Vector2.new(x, y)))
-          if (@map.groundresources[Vector2.new(x, y)] == Resource::Bitcoin)
-            print "b"
-          elsif (@map.groundresources[Vector2.new(x, y)] == Resource::Pot)
-            print "p"
-          elsif (@map.groundresources[Vector2.new(x, y)] == Resource::Cereal)
-            print "c"
-          end
-          next
-        end
-        if (@map.tiles[x][y] == Map::TileType::Open)
-          print " "
-        elsif (@map.tiles[x][y] == Map::TileType::Mountain)
-          print "^"
-        elsif (@map.tiles[x][y] == Map::TileType::Water)
-          print "~"
-        end
-      end
-      print "\n"
-    end
-    print(@team1)
-  end
-end
-
-#################################
-
-g = Game.new(0, 1)
-g.print_world_map
-
-string = JSON.build do |json|
-  json.object do
-    json.field "command", "move"
-    json.field "player", 0
-    json.field "team", 1
-    json.field "target" do
-      json.array do
-        json.number 1
-        json.number 3
-      end
-    end
-    json.field "delta" do
-      json.array do
-        json.number 0
-        json.number -1
+        json.field "cities", cities_jsonable()
       end
     end
   end
 end
-
-print(string)
-print(g.accept_command(string))
-g.print_world_map
-print(g.get_gamestate_json)

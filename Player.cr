@@ -16,6 +16,6 @@ class Player
     end
 
     def print
-        return "#{@name}: #{@bitcoin} b | #{@pot} p | #{@cereal} | c #{@heroes.count} h"
+        return "#{@name}: #{@bitcoin} btc | #{@pot} pot | #{@cereal} cer "
     end
 end

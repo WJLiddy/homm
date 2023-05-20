@@ -1,5 +1,12 @@
+require "json"
+
 class City
+    include JSON::Serializable
+    
+    # don't need to serialize the player, it's set in the json.
+    @[JSON::Field(ignore:true)]
     property owner : Player | Nil
+
     def initialize()
         # 1 - 3, how fast can you mine bitcoins?
         @bitcoin_level = 1
