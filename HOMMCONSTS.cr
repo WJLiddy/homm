@@ -9,7 +9,7 @@ module HOMMCONSTS
     # City Names (12)
     CITY_NAMES = ["Castine","Eldorado","New Paris","West Alex","Gratis","Camden","Morning Sun","Darrtown","Lewisburg","Seven Mile","Millville","New Hope"]
 
-    # Resource Incomes (1/100 of homm for reference)
+    # Resource Incomes (1/200 of homm for reference)
     CITY_BITCOIN_INCOME_LEVEL1 = 5
     CITY_BITCOIN_INCOME_LEVEL2 = 10
     CITY_BITCOIN_INCOME_LEVEL3 = 20
@@ -19,6 +19,30 @@ module HOMMCONSTS
     POT_FARM_INCOME = 1
     CEREAL_GROUNDITEM_VALUE = 3
     CEREAL_FARM_INCOME = 1
+
+    # Cost to upgrade bitcoin/defense/meme
+    LEVEL2_BITCOIN_UPGRADE_COST = 25
+    LEVEL3_BITCOIN_UPGRADE_COST = 50
+
+    LEVEL1_DEFENSE_COST_BITCOIN = 10
+    LEVEL1_DEFENSE_COST_CEREAL = 0
+
+    LEVEL2_DEFENSE_COST_BITCOIN = 20
+    LEVEL2_DEFENSE_COST_CEREAL = 5
+
+    LEVEL3_DEFENSE_COST_BITCOIN = 40
+    LEVEL3_DEFENSE_COST_CEREAL = 15
+
+
+    LEVEL1_MEME_COST_BITCOIN = 15
+    LEVEL1_MEME_COST_POT = 5
+
+    LEVEL2_MEME_COST_BITCOIN = 30
+    LEVEL2_MEME_COST_POT = 7
+
+    LEVEL3_MEME_COST_BITCOIN = 60
+    LEVEL3_MEME_COST_POT = 10
+
 
     # Building Costs (rangers)
     TIER2_BUILDING_COST_BITCOIN = 15

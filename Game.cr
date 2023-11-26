@@ -122,33 +122,65 @@ class Game
 
     # check if we can take over a farm
     if(@map.farms.has_key?(newpos))
-      print("!!farm taken!")
       @map.farms[newpos] = {@map.farms[newpos][0], player}
     end
 
     return CommandErrors::NoError
   end
 
-  def build_command(value : JSON::Any, player : Int32, team : Int32)
-      # check if valid player
-      # check if valid city
-      # check if valid unlock
-      # check if build finished today.
-      # check if has resources
+  def buy_command(value : JSON::Any, playerid : Int32, team : Int32)
+    begin
+      target = value["target"]
+      build = value["build"]
+      param = value["param"]
+    rescue
+      return CommandErrors::MissingJSONKey
+    end
+    
+    player = team == 1 ? @team1[playerid] : @team2[playerid]
+
+    # check if valid city
+    begin
+      targetvec = Vector2.new(target[0].as_i, target[1].as_i)
+      buildstr = build.as_s
+      paramstr = param.as_i
+      if(map.cities[targetvec] == nil)
+        return CommandErrors::InvalidTarget
+      end
+    rescue
+      return CommandErrors::InvalidTarget
+    end
+    return map.cities[targetvec].buy_helper(buildstr, paramstr)
   end
 
-  def buy_command(value : JSON::Any, player : Int32, team : Int32)
-      # check if valid player
-      # check if valid city
-      # check if valid unlock
-      # check if has resources
+  def build_command(value : JSON::Any, playerid : Int32, team : Int32)
+    begin
+      target = value["target"]
+      build = value["build"]
+    rescue
+      return CommandErrors::MissingJSONKey
+    end
+    
+    player = team == 1 ? @team1[playerid] : @team2[playerid]
+
+    # check if valid city
+    begin
+      targetvec = Vector2.new(target[0].as_i, target[1].as_i)
+      if(map.cities[targetvec] == nil)
+        return CommandErrors::InvalidTarget
+      end
+      build_str = build.as_s
+    rescue
+      return CommandErrors::InvalidTarget
+    end
+    return map.cities[targetvec].build_helper(build_str)
   end
 
-  def donate_command(value : JSON::Any, player : Int32, team : Int32)
+  def donate_command(value : JSON::Any, playerid : Int32, team : Int32)
 
   end
 
-  def transfer_command(value : JSON::Any, player : Int32, team : Int32)
+  def transfer_command(value : JSON::Any, playerid : Int32, team : Int32)
 
   end
 
@@ -161,9 +193,9 @@ class Game
 
     begin
       command = value["command"]
-      # bad...
       player = value["player"].as_i
-      team = value["team"].as_i
+      # later - assert command came from the right player, and look up team.
+      team = 1
     rescue
       return CommandErrors::MissingJSONKey
     end
