@@ -1,27 +1,41 @@
 require "./Game"
+require "colorize"
+
+def colorize_team(string : String, playerID : Int32 | Nil)
+  if(playerID == nil)
+    return string.colorize(:white)
+  end
+  colors = [:blue, :red, :green, :yellow, :magenta, :cyan]
+  return string.colorize(colors[playerID.as(Int32)])
+end
 
 def print_world_map(game : Game)
   game.map.size.times do |y|
     game.map.size.times do |x|
+
       # Heroes
-      if(game.get_hero_at(Vector2.new(x, y)) != nil)
-        print "h"
+      h = game.get_hero_at(Vector2.new(x, y))
+      if(h != nil)
+        print colorize_team("h", game.players.index((h.as(Hero)).player))
         next
       end
 
       # Cities
       if (game.map.cities.has_key?(Vector2.new(x, y)))
-        print "X"
+        c = game.map.cities[Vector2.new(x, y)]
+        print colorize_team("X", game.players.index((c.as(City)).owner))
         next
       end
+
       # Farms
       if (game.map.farms.has_key?(Vector2.new(x, y)))
+        team = game.players.index(game.map.farms[Vector2.new(x, y)][1])
         if (game.map.farms[Vector2.new(x, y)][0] == Game::Resource::Bitcoin)
-          print "B"
+          print colorize_team("B", team)
         elsif (game.map.farms[Vector2.new(x, y)][0] == Game::Resource::Pot)
-          print "P"
+          print colorize_team("P", team)
         elsif (game.map.farms[Vector2.new(x, y)][0] == Game::Resource::Cereal)
-          print "C"
+          print colorize_team("C", team)
         end
         next
       end
@@ -71,8 +85,8 @@ def move(player, team, target, delta)
   end
 end
 # Start two player game with one hero
-g = Game.new(0, 1)
-g.process_turn_start(true)
+g = Game.new(0, 2)
+g.process_turn_start(0)
 print_world_map(g)
 
 
@@ -85,26 +99,28 @@ puts(g.accept_command(move(0, 1, Vector2.new(4, 4), Vector2.new(1, 1))))
 puts(g.accept_command(move(0, 1, Vector2.new(5, 5), Vector2.new(1, 1))))
 
 # second move:
-g.process_turn_start(true)
-puts(g.team1[0])
+g.process_turn_start(0)
+puts(g.players[0])
 
 # gets a cereal mine
 puts(g.accept_command(move(0, 1, Vector2.new(6, 6), Vector2.new(1, 1))))
 
 puts(g.accept_command(move(0, 1, Vector2.new(7, 7), Vector2.new(1, -1))))
 puts(g.accept_command(move(0, 1, Vector2.new(8, 6), Vector2.new(1, -1))))
+puts(g.accept_command(move(0, 1, Vector2.new(9, 5), Vector2.new(-1, 0))))
+puts(g.accept_command(move(0, 1, Vector2.new(8, 5), Vector2.new(-1, 0))))
 # gets a bitcoin mine.
 
-puts(g.team1[0].print)
+puts(g.players[0].print)
 # third move:
-g.process_turn_start(true)
+g.process_turn_start(0)
 print_world_map(g)
 
-g.process_turn_start(true)
-g.process_turn_start(true)
-g.process_turn_start(true)
-g.process_turn_start(true)
-puts(g.team1[0].print)
+g.process_turn_start(0)
+g.process_turn_start(0)
+g.process_turn_start(0)
+g.process_turn_start(0)
+puts(g.players[0].print)
+g.process_turn_start(0)
+puts(g.players[0].print)
 print_world_map(g)
-
-# json working better, ignore for now.. print(g.get_gamestate_json)

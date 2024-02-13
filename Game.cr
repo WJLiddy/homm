@@ -4,7 +4,9 @@ require "./Hero"
 require "json"
 require "./HOMMCONSTS"
 
-# HEROES OF TIME AND TERRIOTORY
+# HEROES OF TIME AND TERRITORY
+# only support two players for now.
+
 class Game
   enum Resource
     Bitcoin
@@ -22,24 +24,19 @@ class Game
   end
 
   getter map : Map
-  getter team1 : Array(Player)
-  getter team2 : Array(Player)
+  getter players : Array(Player)
 
-  def initialize(seed : Int32, playersPerTeam : Int32)
+  def initialize(seed : Int32, playersTotal : Int32)
     @random = HommRandom.new(seed)
-    @team1 = [] of Player
-    @team2 = [] of Player
-    playersPerTeam.times do |i|
-      @team1 << Player.new("t1p#{i}")
-      @team2 << Player.new("t2p#{i}")
+    @players = [] of Player
+    playersTotal.times do |i|
+      @players << Player.new("p#{i}",i)
     end
-    @map = Map.new(seed, playersPerTeam, @random)
+    # fixme
+    @map = Map.new(seed, playersTotal // 2, @random)
     # give players inital heroes
-    @team1.each_with_index do |player, i|
-      player.heroes[@map.team1spawn[i]] = Hero.new
-    end
-    @team2.each_with_index do |player, i|
-      player.heroes[@map.team2spawn[i]] = Hero.new
+    @players.each_with_index do |player, i|
+      player.heroes[@map.spawn[i]] = Hero.new(player)
     end
   end
 
@@ -91,7 +88,7 @@ class Game
     end
 
     # move seems good.
-    player = team == 1 ? @team1[playerid] : @team2[playerid]
+    player = players[playerid]
     hero = player.heroes[targetvec]
 
     # has points
@@ -137,7 +134,7 @@ class Game
       return CommandErrors::MissingJSONKey
     end
     
-    player = team == 1 ? @team1[playerid] : @team2[playerid]
+    player = @players[playerid]
 
     # check if valid city
     begin
@@ -161,7 +158,7 @@ class Game
       return CommandErrors::MissingJSONKey
     end
     
-    player = team == 1 ? @team1[playerid] : @team2[playerid]
+    player = @players[playerid]
 
     # check if valid city
     begin
@@ -221,9 +218,9 @@ class Game
     end
   end
 
-  def process_turn_start(team1 : Bool)
+  def process_turn_start(team : Int32)
     # players get income from cities and resources
-    (team1 ? @team1 : @team2).each do |player|
+    @players.each do |player|
       player.bitcoin += HOMMCONSTS::CITY_BITCOIN_INCOME_LEVEL1 * @map.cities.count { |k, v| v.owner == player }
       player.bitcoin += HOMMCONSTS::BITCOIN_FARM_INCOME * @map.farms.count { |k, v| v[0] == Resource::Bitcoin && v[1] == player }
       player.pot += HOMMCONSTS::POT_FARM_INCOME * @map.farms.count { |k, v| v[0] == Resource::Pot && v[1] == player }
@@ -235,7 +232,7 @@ class Game
   end
 
   def get_hero_at(tpos : Vector2) : Hero | Nil
-    (@team1 + @team2).each do |player|
+    @players.each do |player|
       player.heroes.each do |pos, hero|
         if (pos == tpos)
           return hero

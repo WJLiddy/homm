@@ -20,8 +20,7 @@ class Map
   getter cities : Hash(Vector2, City)
   getter farms : Hash(Vector2, Tuple(Game::Resource, Player | Nil))
   getter groundresources : Hash(Vector2, Game::Resource)
-  getter team1spawn : Array(Vector2)
-  getter team2spawn : Array(Vector2)
+  getter spawn : Array(Vector2)
 
   def initialize(seed : Int32, @playersPerTeam : Int32, hr : HommRandom)
     @size = @playersPerTeam * 18
@@ -32,8 +31,7 @@ class Map
     @groundresources = Hash(Vector2, Game::Resource).new
     @farms = Hash(Vector2, Tuple(Game::Resource, Player | Nil)).new
     @cities = Hash(Vector2, City).new
-    @team1spawn = Array(Vector2).new
-    @team2spawn = Array(Vector2).new
+    @spawn = Array(Vector2).new
     @playersPerTeam = playersPerTeam
 
     spawn_mountains()
@@ -74,7 +72,7 @@ class Map
       xmax = ((@size/2) * ((c + 1)/citycount)).to_i - 2
       pos = Vector2.new(@hr.rint(xmin, xmax), @hr.rint(0, @size))
       @cities[pos] = City.new
-      @team1spawn << pos
+      @spawn << pos
       # assign this city to a player.
     end
   end
@@ -195,9 +193,11 @@ class Map
       @groundresources[Vector2.new(@size - k.x - 1, k.y)] = v
     end
 
-    @team1spawn.each do |k|
-      @team2spawn << Vector2.new(@size - k.x - 1, k.y)
+    mirrored_spawns = [] of Vector2
+    @spawn.each do |k|
+      mirrored_spawns << Vector2.new(@size - k.x - 1, k.y)
     end
+    @spawn = @spawn + mirrored_spawns
   end
 
   def is_open_terrain?(pos : Vector2)
