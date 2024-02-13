@@ -182,7 +182,7 @@ class Map
     end
 
     @cities.each do |k, v|
-      @cities[Vector2.new(@size - k.x - 1, k.y)] = v
+      @cities[Vector2.new(@size - k.x - 1, k.y)] = City.new
     end
 
     @farms.each do |k, v|

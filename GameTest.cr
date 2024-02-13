@@ -63,12 +63,11 @@ def print_world_map(game : Game)
 end
 
 # shorthand for move event
-def move(player, team, target, delta)
+def move(player, target, delta)
   JSON.build do |json|
     json.object do
       json.field "command", "move"
       json.field "player", player
-      json.field "team", team
       json.field "target" do
         json.array do
           json.number target.x
@@ -84,6 +83,44 @@ def move(player, team, target, delta)
     end
   end
 end
+
+# shorthand for buy
+def buy(player, target, delta)
+  JSON.build do |json|
+    json.object do
+      json.field "command", "buy"
+      json.field "player", player
+      json.field "build", build
+      json.field "param", param
+      json.field "target" do
+        json.array do
+          json.number target.x
+          json.number target.y
+        end
+      end
+    end
+  end
+end
+
+# shorthand for build
+def build(player, target, build)
+  JSON.build do |json|
+    json.object do
+      json.field "command", "build"
+      json.field "player", player
+      json.field "build", build
+      json.field "target" do
+        json.array do
+          json.number target.x
+          json.number target.y
+        end
+      end
+    end
+  end
+end
+
+
+
 # Start two player game with one hero
 g = Game.new(0, 2)
 g.process_turn_start(0)
@@ -91,24 +128,24 @@ print_world_map(g)
 
 
 # first move:
-puts(g.accept_command(move(0, 1, Vector2.new(1, 3), Vector2.new(1, -1))))
-puts(g.accept_command(move(0, 1, Vector2.new(2, 2), Vector2.new(1, 1))))
-puts(g.accept_command(move(0, 1, Vector2.new(3, 3), Vector2.new(1, 1))))
-puts(g.accept_command(move(0, 1, Vector2.new(4, 4), Vector2.new(1, 1))))
+puts(g.accept_command(move(0,  Vector2.new(1, 3), Vector2.new(1, -1))))
+puts(g.accept_command(move(0,  Vector2.new(2, 2), Vector2.new(1, 1))))
+puts(g.accept_command(move(0,  Vector2.new(3, 3), Vector2.new(1, 1))))
+puts(g.accept_command(move(0,  Vector2.new(4, 4), Vector2.new(1, 1))))
 # gets a bitcoin pickupable.
-puts(g.accept_command(move(0, 1, Vector2.new(5, 5), Vector2.new(1, 1))))
+puts(g.accept_command(move(0,  Vector2.new(5, 5), Vector2.new(1, 1))))
 
 # second move:
 g.process_turn_start(0)
 puts(g.players[0])
 
 # gets a cereal mine
-puts(g.accept_command(move(0, 1, Vector2.new(6, 6), Vector2.new(1, 1))))
+puts(g.accept_command(move(0,  Vector2.new(6, 6), Vector2.new(1, 1))))
 
-puts(g.accept_command(move(0, 1, Vector2.new(7, 7), Vector2.new(1, -1))))
-puts(g.accept_command(move(0, 1, Vector2.new(8, 6), Vector2.new(1, -1))))
-puts(g.accept_command(move(0, 1, Vector2.new(9, 5), Vector2.new(-1, 0))))
-puts(g.accept_command(move(0, 1, Vector2.new(8, 5), Vector2.new(-1, 0))))
+puts(g.accept_command(move(0,  Vector2.new(7, 7), Vector2.new(1, -1))))
+puts(g.accept_command(move(0,  Vector2.new(8, 6), Vector2.new(1, -1))))
+puts(g.accept_command(move(0,  Vector2.new(9, 5), Vector2.new(-1, 0))))
+puts(g.accept_command(move(0,  Vector2.new(8, 5), Vector2.new(-1, 0))))
 # gets a bitcoin mine.
 
 puts(g.players[0].print)
@@ -124,3 +161,43 @@ puts(g.players[0].print)
 g.process_turn_start(0)
 puts(g.players[0].print)
 print_world_map(g)
+
+
+# order some city commands
+puts(g.accept_command(build(0,  Vector2.new(1, 3), "range")))
+puts(g.accept_command(build(0,  Vector2.new(1, 3), "range")))
+g.process_turn_start(0)
+puts(g.players[0].print)
+puts(g.accept_command(build(0,  Vector2.new(1, 3), "datacenter")))
+g.process_turn_start(0)
+puts(g.players[0].print)
+puts(g.accept_command(build(0,  Vector2.new(1, 3), "datacenter")))
+g.process_turn_start(0)
+puts(g.players[0].print)
+g.process_turn_start(0)
+puts(g.players[0].print)
+puts("trying for walls")
+puts(g.accept_command(build(0,  Vector2.new(1, 3), "walls")))
+g.process_turn_start(0)
+puts(g.accept_command(build(0,  Vector2.new(1, 3), "walls")))
+puts(g.players[0].print)
+g.process_turn_start(0)
+puts(g.accept_command(build(0,  Vector2.new(1, 3), "walls")))
+g.process_turn_start(0)
+g.process_turn_start(0)
+g.process_turn_start(0)
+g.process_turn_start(0)
+g.process_turn_start(0)
+g.process_turn_start(0)
+g.process_turn_start(0)
+g.process_turn_start(0)
+g.process_turn_start(0)
+g.process_turn_start(0)
+puts("walls again")
+puts(g.accept_command(build(0,  Vector2.new(1, 3), "walls")))
+puts(g.players[0].print)
+puts(g.accept_command(build(0,  Vector2.new(1, 3), "library")))
+puts(g.accept_command(build(0,  Vector2.new(1, 3), "walls")))
+puts(g.accept_command(build(0,  Vector2.new(1, 3), "stables")))
+puts(g.accept_command(build(0,  Vector2.new(1, 3), "workshop")))
+puts(g.accept_command(build(0,  Vector2.new(1, 3), "school")))

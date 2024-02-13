@@ -37,10 +37,12 @@ class Game
     # give players inital heroes
     @players.each_with_index do |player, i|
       player.heroes[@map.spawn[i]] = Hero.new(player)
+      # all spawns start on a city
+      @map.cities[@map.spawn[i]].owner = player
     end
   end
 
-  def move_command(value : JSON::Any, playerid : Int32, team : Int32)
+  def move_command(value : JSON::Any, playerid : Int32)
 
     # error checking, make sure we have all the keys and targets
     begin
@@ -125,10 +127,10 @@ class Game
     return CommandErrors::NoError
   end
 
-  def buy_command(value : JSON::Any, playerid : Int32, team : Int32)
+  def buy_command(value : JSON::Any, playerid : Int32)
     begin
       target = value["target"]
-      build = value["build"]
+      buy = value["build"]
       param = value["param"]
     rescue
       return CommandErrors::MissingJSONKey
@@ -139,7 +141,7 @@ class Game
     # check if valid city
     begin
       targetvec = Vector2.new(target[0].as_i, target[1].as_i)
-      buildstr = build.as_s
+      buystr = buy.as_s
       paramstr = param.as_i
       if(map.cities[targetvec] == nil)
         return CommandErrors::InvalidTarget
@@ -147,10 +149,10 @@ class Game
     rescue
       return CommandErrors::InvalidTarget
     end
-    return map.cities[targetvec].buy_helper(buildstr, paramstr)
+    return map.cities[targetvec].buy_helper(buystr, paramstr)
   end
 
-  def build_command(value : JSON::Any, playerid : Int32, team : Int32)
+  def build_command(value : JSON::Any, playerid : Int32)
     begin
       target = value["target"]
       build = value["build"]
@@ -173,11 +175,11 @@ class Game
     return map.cities[targetvec].build_helper(build_str)
   end
 
-  def donate_command(value : JSON::Any, playerid : Int32, team : Int32)
+  def donate_command(value : JSON::Any, playerid : Int32)
 
   end
 
-  def transfer_command(value : JSON::Any, playerid : Int32, team : Int32)
+  def transfer_command(value : JSON::Any, playerid : Int32)
 
   end
 
@@ -191,43 +193,62 @@ class Game
     begin
       command = value["command"]
       player = value["player"].as_i
-      # later - assert command came from the right player, and look up team.
-      team = 1
+      # later - assert command came from the right player.
     rescue
       return CommandErrors::MissingJSONKey
     end
 
     # move a player to a tile, this is also used to enter cities, pick up resources, and start fights.
     if (command == "move")
-      return move_command(value, player, team)
+      return move_command(value, player)
     end
     # build a building in a city. Only valid once per city per turn
     if (command == "build")
-      return build_command(value, player, team)
+      return build_command(value, player)
     end
     # buy a unit or a new hero in a city.
     if (command == "buy")
-      return buy_command(value, player, team)
+      return buy_command(value, player)
     end
     # give resources to someone.
     if (command == "donate")
-      return donate_command(value, player, team)
+      return donate_command(value, player)
     end
     if (command == "transfer")
-      return transfer_command(value, player, team)
+      return transfer_command(value, player)
     end
   end
 
   def process_turn_start(team : Int32)
     # players get income from cities and resources
     @players.each do |player|
-      player.bitcoin += HOMMCONSTS::CITY_BITCOIN_INCOME_LEVEL1 * @map.cities.count { |k, v| v.owner == player }
+      # city income
+      @map.cities.each do |pos, city|
+        if(city.owner == player)
+          if(city.bitcoin_level == 1)
+            player.bitcoin += HOMMCONSTS::CITY_BITCOIN_INCOME_LEVEL1
+          elsif(city.bitcoin_level == 2)
+            player.bitcoin += HOMMCONSTS::CITY_BITCOIN_INCOME_LEVEL2
+          elsif(city.bitcoin_level == 3)
+            player.bitcoin += HOMMCONSTS::CITY_BITCOIN_INCOME_LEVEL3
+          end
+        end
+      end
+      
+      # farm income
       player.bitcoin += HOMMCONSTS::BITCOIN_FARM_INCOME * @map.farms.count { |k, v| v[0] == Resource::Bitcoin && v[1] == player }
       player.pot += HOMMCONSTS::POT_FARM_INCOME * @map.farms.count { |k, v| v[0] == Resource::Pot && v[1] == player }
       player.cereal += HOMMCONSTS::CEREAL_FARM_INCOME * @map.farms.count { |k, v| v[0] == Resource::Cereal && v[1] == player }
+
+      # hero move points refresh
       player.heroes.each do |pos, hero|
         hero.refresh_points()
       end
+    end
+    
+    # clear city build flag
+    @map.cities.each do |pos, city|
+      city.built = false
     end
   end
 

@@ -6,6 +6,8 @@ class City
     # don't need to serialize the player, it's set in the json.
     @[JSON::Field(ignore:true)]
     property owner : Player | Nil
+    property built : Bool
+    property bitcoin_level : Int32
 
     def initialize()
         # 1 - 3, how fast can you mine bitcoins?
@@ -27,8 +29,7 @@ class City
     end
 
     # yucky but i dont care lol
-    def upgrade_bitcoin_level()
-        return if @owner.nil?
+    def upgrade_bitcoin_level() : Bool
         owner = (@owner.as Player)
         if @bitcoin_level == 1 && owner.bitcoin >= HOMMCONSTS::LEVEL2_BITCOIN_UPGRADE_COST
             owner.bitcoin -= HOMMCONSTS::LEVEL2_BITCOIN_UPGRADE_COST
@@ -44,8 +45,7 @@ class City
         return false
     end
 
-    def upgrade_defense_level()
-        return if @owner.nil?
+    def upgrade_defense_level() : Bool
         owner = (@owner.as Player)
         if @defense_level == 0 && owner.bitcoin >= HOMMCONSTS::LEVEL1_DEFENSE_COST_BITCOIN  && owner.cereal >= HOMMCONSTS::LEVEL1_DEFENSE_COST_CEREAL
             owner.bitcoin -= HOMMCONSTS::LEVEL1_DEFENSE_COST_BITCOIN
@@ -69,7 +69,7 @@ class City
         return false
     end
 
-    def upgrade_meme_level()
+    def upgrade_meme_level() : Bool
         if @defense_level == 0 && try_purchase(HOMMCONSTS::LEVEL1_MEME_COST_BITCOIN,HOMMCONSTS::LEVEL1_MEME_COST_POT,0)
             @meme_level = 1
             @built = true
@@ -86,7 +86,16 @@ class City
         return false
     end
 
-    def try_purchase(bitcoin : Int, pot : Int, cereal : Int)
+    def unlock_unit_building(unit_type : Int32)
+        if unit_type >= 0 && unit_type < 5
+            @unit_unlocks[unit_type] = true
+            @built = true
+            return true
+        end
+        return false
+    end
+
+    def try_purchase(bitcoin : Int32, pot : Int32, cereal : Int32)
         if @owner.nil?
             return false
         end
@@ -100,61 +109,47 @@ class City
         return false
     end
 
-    def unlock_unit_building(unit_type : Int)
-        if unit_type >= 0 && unit_type < 5
-            @unit_unlocks[unit_type] = true
-        end
-    end
-
-    def train_unit(unit_type : Int, amount : Int)
+    def train_unit(unit_type : Int32, amount : Int32)
         if unit_type >= 0 && unit_type < 5
             @units_available[unit_type] += amount
         end
     end
 
-    # assumes that player owns city and all other checks are ok
-    def build_helper(build : String)
-        if build == "datacenter"
-            if @bitcoin_level == 3
-                return Game::CommandErrors::InvalidTarget
-            elsif upgrade_bitcoin_level()
-                return Game::CommandErrors::NoError
-            else
-                return Game::CommandErrors::InsufficientResources
-            end
-
-        elsif build == "walls"
-            if @defense_level == 3
-                return Game::CommandErrors::InvalidTarget
-            elsif upgrade_defense_level()
-                return Game::CommandErrors::NoError
-            else
-                return Game::CommandErrors::InsufficientResources
-            end
-
-        elsif build == "library"
-            if @meme_level == 3
-                return Game::CommandErrors::InvalidTarget
-            elsif upgrade_meme_level()
-                return Game::CommandErrors::NoError
-            else
-                return Game::CommandErrors::InsufficientResources
-            end
-
-        elsif build == "TODO"
-            unlock_unit_building(1)
+    def trybuild(invalidcond : Bool, func : -> Bool)
+        if invalidcond
+            return Game::CommandErrors::InvalidTarget
+        elsif func.call
+            return Game::CommandErrors::NoError
+        else
+            return Game::CommandErrors::InsufficientResources
         end
-
-        return Game::CommandErrors::InvalidTarget
-
-
     end
 
-    def buy_helper(build : String, arg : Int)
-        #elsif build == "u"
-        #    city.unlock_unit_building(arg)
-        #elsif build == "t"
-        #    city.train_unit(arg, 1)
-        #end
+    # assumes that player owns city and all other checks are ok
+    def build_helper(build : String)
+        if(@built)
+            return Game::CommandErrors::InvalidTarget
+        end
+
+        if build == "datacenter"
+            return trybuild(@bitcoin_level == 3, ->{upgrade_bitcoin_level()})
+        elsif build == "walls"
+            return trybuild(@defense_level == 3, ->{upgrade_defense_level()})
+        elsif build == "library"
+            return trybuild(@meme_level == 3, ->{upgrade_meme_level()})
+        elsif build == "range"
+            return trybuild(@unit_unlocks[1], ->{unlock_unit_building(1)})
+        elsif build == "stables"
+            return trybuild(@unit_unlocks[2], ->{unlock_unit_building(2)})
+        elsif build == "workshop"
+            return trybuild(@unit_unlocks[3], ->{unlock_unit_building(3)})
+        elsif build == "school"
+            return trybuild(@unit_unlocks[4], ->{unlock_unit_building(4)})
+        end
+        return Game::CommandErrors::InvalidTarget
+    end
+
+    def buy_helper(build : String, arg : Int32)
+        # we can buy any of the 5 base units.
     end
 end
