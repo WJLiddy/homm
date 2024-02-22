@@ -5,8 +5,6 @@ require "json"
 require "./HOMMCONSTS"
 
 # HEROES OF TIME AND TERRITORY
-# only support two players for now.
-
 class Game
   enum Resource
     Bitcoin
@@ -36,7 +34,8 @@ class Game
     @map = Map.new(seed, playersTotal // 2, @random)
     # give players inital heroes
     @players.each_with_index do |player, i|
-      player.heroes[@map.spawn[i]] = Hero.new(player)
+      # this sucks here, heroes are not picked from a pool correctly
+      player.heroes[@map.spawn[i]] = Hero.new(player,i,1,2,3)
       # all spawns start on a city
       @map.cities[@map.spawn[i]].owner = player
     end
@@ -263,13 +262,31 @@ class Game
     return nil
   end
 
-  # later, add owner...
+  # convert cities, farms because we use a dict to store the coords and vec2 can't be conv to key
   def cities_jsonable()
-    cities = Array(Tuple(Int32, Int32, City)).new
+    cities = Array(Tuple(Int32, Int32, City, Int32)).new
     @map.cities.each do |pos, city|
-      cities << {pos.x, pos.y, city}
+      cities << {pos.x, pos.y, city, city.owner.nil? ? -1 : players.index(city.owner).as(Int32)}
     end
     return cities
+  end
+
+  def farms_jsonable()
+    farms = Array(Tuple(Int32, Int32, Resource, Int32)).new
+    @map.farms.each do |pos, farm|
+      farms << {pos.x, pos.y, farm[0], farm[1].nil? ? -1 : players.index(farm[1]).as(Int32)}
+    end
+    return farms
+  end
+
+  def heroes_jsonable()
+    heroes = Array(Tuple(Int32, Int32, Hero, Int32)).new
+    @players.each do |player|
+      player.heroes.each do |pos, hero|
+        heroes << {pos.x, pos.y, hero, players.index(player).as(Int32)}
+      end
+    end
+    return heroes
   end
 
 
@@ -278,6 +295,9 @@ class Game
       json.object do
         json.field "tiles", @map.tiles
         json.field "cities", cities_jsonable()
+        json.field "farms", farms_jsonable()
+        json.field "players", @players
+        json.field "heroes", heroes_jsonable()
       end
     end
   end

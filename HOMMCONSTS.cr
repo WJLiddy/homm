@@ -1,8 +1,8 @@
 module HOMMCONSTS
     # Hero Moving
-    HERO_MOVE_RECOVERY = 20
-    HERO_MAX_MOVE = 30
-    HERO_MOVE_COST = 4
+    HERO_MOVE_BASE = 3
+    HERO_MAX_MOVE = 7
+    HERO_MOVE_COST = 1
 
     # Hero Names (12)
     HERO_NAMES = ["Ayyden","Fiona","Sorpigal","Jimmy","Magog","Elige","Vinny","Aristocrat","Woodcut","Obama","Discord","Beep"]

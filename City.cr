@@ -86,8 +86,13 @@ class City
         return false
     end
 
+    def try_purchase_unit_building(unit_type : Int32) : Bool
+        return try_purchase(HOMMCONSTS::TIER2_BUILDING_COST_BITCOIN, HOMMCONSTS::TIER2_BUILDING_COST_POT, HOMMCONSTS::TIER2_BUILDING_COST_CEREAL) if(unit_type == 0)
+        return false
+    end
+
     def unlock_unit_building(unit_type : Int32)
-        if unit_type >= 0 && unit_type < 5
+        if try_purchase_unit_building(unit_type)
             @unit_unlocks[unit_type] = true
             @built = true
             return true

@@ -11,10 +11,6 @@ class Map
     Water
   end
 
-  @tiles : Array(Array(TileType))
-  @groundresources : Hash(Vector2, Game::Resource)
-  @farms : Hash(Vector2, Tuple(Game::Resource, Int32))
-  @cities : Hash(Vector2, City)
   getter size : Int32
   getter tiles : Array(Array(TileType))
   getter cities : Hash(Vector2, City)

@@ -1,16 +1,21 @@
 require "./HOMMCONSTS"
 
 class Hero
+  include JSON::Serializable
   property unit_stacks : Array(Int32)
+  # don't need to serialize the player
+  @[JSON::Field(ignore:true)]
   property player : Player
-  def initialize(player : Player)
-    @move_points = 20
-    @skill_attack = 0
-    @skill_move = 0
-    @skill_meme = 0
+  
+  def initialize(player : Player, id : Int32, move : Int32, health : Int32, attack : Int32)
+    @move_points = 7
+    @move_stat = move
+    @health_stat = health 
+    @attack_stat = attack
     @unit_stacks = [5,0,0,0,0]
     @memes = [false,false,false,false,false]
     @player = player
+    @id = id
   end
 
   def move()
@@ -22,7 +27,7 @@ class Hero
   end
 
   def refresh_points()
-    @move_points += HOMMCONSTS::HERO_MOVE_RECOVERY
+    @move_points += (@move_stat + HOMMCONSTS::HERO_MOVE_BASE)
     @move_points = [@move_points, HOMMCONSTS::HERO_MAX_MOVE].min
   end
 end

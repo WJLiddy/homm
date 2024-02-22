@@ -2,12 +2,15 @@ require "./Hero"
 require "./Vector2"
 # class for a player
 class Player
+    include JSON::Serializable
+    
     property bitcoin : Int32
     property pot : Int32
     property cereal : Int32
     property team : Int32
-    
+    @[JSON::Field(ignore:true)]
     getter heroes : Hash(Vector2, Hero)
+    
     def initialize(name : String, team : Int32)
         @name = name
         @bitcoin = 0

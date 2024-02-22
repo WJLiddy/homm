@@ -8,4 +8,8 @@ struct Vector2
   def +(other : self) : self
     Vector2.new(x + other.x, y + other.y)
   end
+
+  def to_json_object_key
+    return nil
+  end
 end
