@@ -41,7 +41,7 @@ class Game
     end
   end
 
-  def move_command(value : JSON::Any, playerid : Int32)
+  def move_command(value : JSON::Any, playerid : Int32) : CommandErrors
 
     # error checking, make sure we have all the keys and targets
     begin
@@ -126,7 +126,7 @@ class Game
     return CommandErrors::NoError
   end
 
-  def buy_command(value : JSON::Any, playerid : Int32)
+  def buy_command(value : JSON::Any, playerid : Int32) : CommandErrors
     begin
       target = value["target"]
       buy = value["build"]
@@ -151,7 +151,7 @@ class Game
     return map.cities[targetvec].buy_helper(buystr, paramstr)
   end
 
-  def build_command(value : JSON::Any, playerid : Int32)
+  def build_command(value : JSON::Any, playerid : Int32) : CommandErrors
     begin
       target = value["target"]
       build = value["build"]
@@ -174,15 +174,56 @@ class Game
     return map.cities[targetvec].build_helper(build_str)
   end
 
-  def donate_command(value : JSON::Any, playerid : Int32)
-
+  def donate_command(value : JSON::Any, playerid : Int32) : CommandErrors
+    return CommandErrors::InvalidJSON
   end
 
-  def transfer_command(value : JSON::Any, playerid : Int32)
+  # specify two vectors. Units can be transferred between city->hero and hero->hero
+  def transfer_command(value : JSON::Any, playerid : Int32) : CommandErrors
 
+    begin
+      src = value["src"]
+      dest = value["dest"]
+      # src/destype must be city or hero
+      srctype = value["srctype"]
+      destype = value["destype"]
+      # unittype
+      type = value["unittype"]
+      count = value["unitcount"]
+    rescue
+      return CommandErrors::MissingJSONKey
+    end
+    
+    player = @players[playerid]
+    # check source.
+    begin
+      srcvec = Vector2.new(src[0].as_i, src[1].as_i)
+      destvec = Vector2.new(dest[0].as_i, dest[1].as_i)
+      srcloc = nil
+      destloc = nil
+      if(srctype == "city")
+        srcloc = map.cities[srcvec]
+        #does hero have enough?
+      end
+      if(srctype == "hero")
+        srcloc = get_hero_at(srcvec)
+      end
+      if(destype == "city")
+        destloc = map.cities[destvec]
+      end
+      if(destype == "hero")
+        destloc = get_hero_at(destvec)
+      end
+    rescue
+      return CommandErrors::InvalidTarget
+    end
+
+    # check for valid src, dest 
+    return CommandErrors::InvalidJSON
+    
   end
 
-  def accept_command(command : String)
+  def accept_command(command : String) : CommandErrors
     begin
       value = JSON.parse(command)
     rescue
@@ -216,6 +257,7 @@ class Game
     if (command == "transfer")
       return transfer_command(value, player)
     end
+    return CommandErrors::MissingJSONKey
   end
 
   def process_turn_start(team : Int32)

@@ -154,7 +154,8 @@ class City
         return Game::CommandErrors::InvalidTarget
     end
 
-    def buy_helper(build : String, arg : Int32)
+    def buy_helper(build : String, arg : Int32) : Game::CommandErrors
         # we can buy any of the 5 base units.
+        return Game::CommandErrors::InvalidJSON
     end
 end
