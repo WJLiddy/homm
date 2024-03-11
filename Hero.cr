@@ -1,5 +1,5 @@
 require "./HOMMCONSTS"
-
+require "json"
 class Hero
   include JSON::Serializable
   property unit_stacks : Array(Int32)

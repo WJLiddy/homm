@@ -1,5 +1,6 @@
 require "./Hero"
 require "./Vector2"
+require "json"
 # class for a player
 class Player
     include JSON::Serializable
