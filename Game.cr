@@ -5,6 +5,7 @@ require "json"
 require "./HOMMCONSTS"
 
 # HEROES OF TIME AND TERRITORY
+# Games MUST be teams of 2. 
 class Game
   enum Resource
     Bitcoin
@@ -26,10 +27,10 @@ class Game
 
   def initialize(seed : Int32, playersTotal : Int32)
     @random = HommRandom.new(seed)
-    @day = 1
+    @day = 0
     @players = [] of Player
     playersTotal.times do |i|
-      @players << Player.new("p#{i}",i)
+      @players << Player.new("p#{i}",i == 0)
     end
     # fixme
     @map = Map.new(seed, playersTotal // 2, @random)
@@ -186,9 +187,8 @@ class Game
       # src/destype must be city or hero
       srctype = value["srctype"]
       destype = value["destype"]
-      # unittype
-      type = value["unittype"]
-      count = value["unitcount"]
+      # unittype, should be string but I'm trying to hurry
+      type = value["type"]
     rescue
       return CommandErrors::MissingJSONKey
     end
@@ -198,20 +198,17 @@ class Game
     begin
       srcvec = Vector2.new(src[0].as_i, src[1].as_i)
       destvec = Vector2.new(dest[0].as_i, dest[1].as_i)
-      srcloc = nil
-      destloc = nil
-      if(srctype == "city")
+      if(srctype == "city" && destype == "hero")
         srcloc = map.cities[srcvec]
-        #does hero have enough?
+        destloc = get_hero_at(destvec)
+        if(srcloc.x == destloc.x && srcloc.y == destloc.y)
+          # try transfer from city to hero destloc
+          return map.cities[targetvec].transfer_helper(type.as_i, destloc)
+        end
+        #check if city has enough
       end
       if(srctype == "hero")
         srcloc = get_hero_at(srcvec)
-      end
-      if(destype == "city")
-        destloc = map.cities[destvec]
-      end
-      if(destype == "hero")
-        destloc = get_hero_at(destvec)
       end
     rescue
       return CommandErrors::InvalidTarget
@@ -252,13 +249,19 @@ class Game
       return transfer_command(value, player)
     end
     if (command == "endturn")
+
+      # later, detect if all players have ended turn.
+      # 2v2 for now.
       process_turn_start(player)
       return CommandErrors::NoError
     end
     return CommandErrors::MissingJSONKey
   end
 
-  def process_turn_start(team : Int32)
+  def process_turn_start(player : Int32)
+    # next turn!
+    @team = !@team
+
     # players get income from cities and resources
     @players.each do |player|
       # city income
@@ -272,7 +275,7 @@ class Game
             player.bitcoin += HOMMCONSTS::CITY_BITCOIN_INCOME_LEVEL3
           end
         end
-        city.refresh_units()
+        city.refresh_units() if ((@day % 7 == 6) && player.team == @team)
       end
       
       # farm income
@@ -290,7 +293,7 @@ class Game
     @map.cities.each do |pos, city|
       city.built = false
     end
-    @day += 1
+    @day += 1 if !@team
   end
 
   def get_hero_at(tpos : Vector2) : Hero | Nil
@@ -341,6 +344,7 @@ class Game
         json.field "players", @players
         json.field "heroes", heroes_jsonable()
         json.field "day", @day
+        json.field "team", @team
       end
     end
   end

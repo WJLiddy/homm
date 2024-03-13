@@ -119,6 +119,13 @@ class City
         return false
     end
 
+    def transfer_helper(type : Int32, hero : Hero)
+        if(@units_garrisoned[type] > 0)
+            hero.unit_stacks[type] += 1 
+            @units_garrisoned[type] -= 1
+        end
+    end
+
     def try_purchase(bitcoin : Int32, pot : Int32, cereal : Int32)
         if @owner.nil?
             return false

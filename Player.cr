@@ -8,11 +8,11 @@ class Player
     property bitcoin : Int32
     property pot : Int32
     property cereal : Int32
-    property team : Int32
+    property team : Bool
     @[JSON::Field(ignore:true)]
     getter heroes : Hash(Vector2, Hero)
     
-    def initialize(name : String, team : Int32)
+    def initialize(name : String, team : Bool)
         @name = name
         @bitcoin = 0
         @pot = 0
