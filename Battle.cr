@@ -67,29 +67,55 @@ class Battle
         end
     end
 
+    def movevert(x : Int32, y : Int32, pol : Int32, arena_next : Array(Array(BattleUnit | Nil))) : Bool
+        # if there is a unit in the next rank, but not in front of me, move up
+        # this is allowed because we check low Y first.
+        unit_in_front = false
+        HOMMCONSTS::BATTLE_ARENA_HEIGHT.times do |ny|
+            if(arena_next[x+pol][ny] != nil && (arena_next[x+pol][ny].as(BattleUnit).team != @arena[x][y].as(BattleUnit).team))
+                unit_in_front = true
+            end
+        end
+
+        if(unit_in_front && arena_next[x][y-1] == nil)
+            # moveup
+            arena_next[x][y-1] = @arena[x][y]
+            return true
+        end
+
+        arena_next[x][y] = @arena[x][y]
+        return true
+    end
+
+    def movehorz(x : Int32, y : Int32, pol : Int32, arena_next : Array(Array(BattleUnit | Nil))) : Bool
+        if(arena_next[x+pol][y] == nil)
+            arena_next[x+pol][y] = @arena[x][y]
+            return true
+        end
+        return false
+    end
+
+    def attack(x : Int32, y : Int32, pol : Int32, arena_next : Array(Array(BattleUnit | Nil))) : Bool
+        return false
+    end
+
+
     def tick()
         arena_next = Array(Array(BattleUnit | Nil)).new(HOMMCONSTS::BATTLE_ARENA_WIDTH) { Array(BattleUnit | Nil).new(HOMMCONSTS::BATTLE_ARENA_HEIGHT, nil)}
-        # iterate over every unit the army
-        @arena.each_with_index do |ary, x|
-            ary.each_with_index do |unit, y|
-                if unit != nil
-                    if (unit.as(BattleUnit)).team == 0 
-                        # move right
-                        if (x < HOMMCONSTS::BATTLE_ARENA_WIDTH - 1) && @turn && @arena[x+1][y] == nil
-                            arena_next[x+1][y] = unit
-                        else
-                            arena_next[x][y] = unit                           
-                        end
-                    elsif (unit.as(BattleUnit)).team != 0
-                        # move left
-                        if x > 0 && !@turn && @arena[x-1][y] == nil
-                            arena_next[x-1][y] = unit
-                        else
-                            arena_next[x][y] = unit                           
-                        end
+        # polarity matters. When units go right, the rightmost unit needs to decide the move first.
+        # 
+        HOMMCONSTS::BATTLE_ARENA_WIDTH.times do |x|
+            HOMMCONSTS::BATTLE_ARENA_HEIGHT.times do |y|
+                adj_x = (@turn) ? (HOMMCONSTS::BATTLE_ARENA_WIDTH - 1 - x) : x
+                pol = (@turn) ? 1 : -1
+                if @arena[adj_x][y] != nil
+                    unit = @arena[adj_x][y].as(BattleUnit)
+                    if unit.team == 0 && @turn || unit.team == 1 && !@turn
+                        (attack(adj_x,y,pol,arena_next) || movehorz(adj_x,y,pol,arena_next) || movevert(adj_x,y,pol,arena_next) )
+                    else
+                        arena_next[adj_x][y] = unit
                     end
-                end
-                
+                end      
             end
         end
         @arena = arena_next

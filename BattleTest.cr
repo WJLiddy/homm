@@ -18,10 +18,10 @@ def printBattle(b : Battle)
     end
 end
 # test battle
-leftHero = Hero.new(Player.new("a",0),0,0,3,2)
-rightHero = Hero.new(Player.new("b",1),0,0,3,2)
+leftHero = Hero.new(Player.new("a",false),0,0,3,2)
+rightHero = Hero.new(Player.new("b",true),0,0,3,2)
 battle = Battle.new(leftHero, rightHero)
-200.times do 
+100.times do 
     battle.tick()
 end
 printBattle(battle)

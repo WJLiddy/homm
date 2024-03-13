@@ -119,11 +119,22 @@ class City
         return false
     end
 
-    def transfer_helper(type : Int32, hero : Hero)
-        if(@units_garrisoned[type] > 0)
+    def transfer_helper(type : Int32, hero : Hero, dir : Bool) : Game::CommandErrors
+
+        # transfer from city to hero
+        if(@units_garrisoned[type] > 0 && dir)
             hero.unit_stacks[type] += 1 
             @units_garrisoned[type] -= 1
+            return Game::CommandErrors::NoError
         end
+
+        # hero to city
+        if(hero.unit_stacks[type] > 0 && !dir)
+            hero.unit_stacks[type] -= 1 
+            @units_garrisoned[type] += 1
+            return Game::CommandErrors::NoError
+        end
+        return Game::CommandErrors::InsufficientResources
     end
 
     def try_purchase(bitcoin : Int32, pot : Int32, cereal : Int32)

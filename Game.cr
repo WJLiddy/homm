@@ -186,7 +186,7 @@ class Game
       dest = value["dest"]
       # src/destype must be city or hero
       srctype = value["srctype"]
-      destype = value["destype"]
+      destype = value["desttype"]
       # unittype, should be string but I'm trying to hurry
       type = value["type"]
     rescue
@@ -198,17 +198,23 @@ class Game
     begin
       srcvec = Vector2.new(src[0].as_i, src[1].as_i)
       destvec = Vector2.new(dest[0].as_i, dest[1].as_i)
+
       if(srctype == "city" && destype == "hero")
         srcloc = map.cities[srcvec]
         destloc = get_hero_at(destvec)
-        if(srcloc.x == destloc.x && srcloc.y == destloc.y)
+        if(srcvec.x == destvec.x && srcvec.y == destvec.y)
           # try transfer from city to hero destloc
-          return map.cities[targetvec].transfer_helper(type.as_i, destloc)
+          return srcloc.transfer_helper(type.as_i, destloc.as(Hero), true)
         end
-        #check if city has enough
       end
-      if(srctype == "hero")
-        srcloc = get_hero_at(srcvec)
+
+      if(srctype == "hero" && destype == "city")
+        srcloc = map.cities[srcvec]
+        destloc = get_hero_at(destvec)
+        if(srcvec.x == destvec.x && srcvec.y == destvec.y)
+          # try transfer from city to hero destloc
+          return srcloc.transfer_helper(type.as_i, destloc.as(Hero), false)
+        end
       end
     rescue
       return CommandErrors::InvalidTarget
