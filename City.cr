@@ -26,6 +26,7 @@ class City
         @owner = nil
         # did anyone build this turn?
         @built = false
+        refresh_units()
     end
 
     # yucky but i dont care lol
@@ -87,8 +88,26 @@ class City
     end
 
     def try_purchase_unit_building(unit_type : Int32) : Bool
-        return try_purchase(HOMMCONSTS::TIER2_BUILDING_COST_BITCOIN, HOMMCONSTS::TIER2_BUILDING_COST_POT, HOMMCONSTS::TIER2_BUILDING_COST_CEREAL) if(unit_type == 0)
+        case unit_type
+        when 1
+            return try_purchase(HOMMCONSTS::TIER2_BUILDING_COST_BITCOIN, HOMMCONSTS::TIER2_BUILDING_COST_POT, HOMMCONSTS::TIER2_BUILDING_COST_CEREAL) 
+        when 2
+            return try_purchase(HOMMCONSTS::TIER3_BUILDING_COST_BITCOIN, HOMMCONSTS::TIER3_BUILDING_COST_POT, HOMMCONSTS::TIER3_BUILDING_COST_CEREAL) 
+        when 3
+            return try_purchase(HOMMCONSTS::TIER4_BUILDING_COST_BITCOIN, HOMMCONSTS::TIER4_BUILDING_COST_POT, HOMMCONSTS::TIER4_BUILDING_COST_CEREAL) 
+        when 4
+            return try_purchase(HOMMCONSTS::TIER5_BUILDING_COST_BITCOIN, HOMMCONSTS::TIER5_BUILDING_COST_POT, HOMMCONSTS::TIER5_BUILDING_COST_CEREAL) 
+        end
+
         return false
+    end
+
+    def refresh_units()
+        @units_available[0] += HOMMCONSTS::TIER1_SPAWNRATE if @unit_unlocks[0]
+        @units_available[1] += HOMMCONSTS::TIER2_SPAWNRATE if @unit_unlocks[1]
+        @units_available[2] += HOMMCONSTS::TIER3_SPAWNRATE if @unit_unlocks[2]
+        @units_available[3] += HOMMCONSTS::TIER4_SPAWNRATE if @unit_unlocks[3]
+        @units_available[4] += HOMMCONSTS::TIER5_SPAWNRATE if @unit_unlocks[4]
     end
 
     def unlock_unit_building(unit_type : Int32)
@@ -114,10 +133,11 @@ class City
         return false
     end
 
-    def train_unit(unit_type : Int32, amount : Int32)
-        if unit_type >= 0 && unit_type < 5
-            @units_available[unit_type] += amount
-        end
+    # not great
+    def train_unit(unit_type : Int32) : Bool
+        @units_garrisoned[unit_type] += 1
+        @units_available[unit_type] -= 1
+        return true
     end
 
     def trybuild(invalidcond : Bool, func : -> Bool)
@@ -154,8 +174,21 @@ class City
         return Game::CommandErrors::InvalidTarget
     end
 
-    def buy_helper(build : String, arg : Int32) : Game::CommandErrors
+    # nasty, don't use trybuild..
+    def buy_helper(build : String) : Game::CommandErrors
+       case build
+       when "inf"
+            return trybuild(!(@unit_unlocks[0] && @units_available[0] > 0 && try_purchase(HOMMCONSTS::TIER1_COST,0,0)), ->{train_unit(0)})
+        when "arc"
+            return trybuild(!(@unit_unlocks[1] && @units_available[1] > 0 && try_purchase(HOMMCONSTS::TIER2_COST,0,0)), ->{train_unit(1)})
+        when "cav"
+            return trybuild(!(@unit_unlocks[2] && @units_available[2] > 0 && try_purchase(HOMMCONSTS::TIER3_COST,0,0)), ->{train_unit(2)})
+        when "bal"
+            return trybuild(!(@unit_unlocks[3] && @units_available[3] > 0 && try_purchase(HOMMCONSTS::TIER4_COST,0,0)), ->{train_unit(3)})
+        when "wiz"
+            return trybuild(!(@unit_unlocks[4] && @units_available[4] > 0 && try_purchase(HOMMCONSTS::TIER5_COST,0,0)), ->{train_unit(4)})
+        end
         # we can buy any of the 5 base units.
-        return Game::CommandErrors::InvalidJSON
+        return Game::CommandErrors::InvalidTarget
     end
 end

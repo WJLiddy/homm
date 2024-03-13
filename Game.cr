@@ -26,6 +26,7 @@ class Game
 
   def initialize(seed : Int32, playersTotal : Int32)
     @random = HommRandom.new(seed)
+    @day = 1
     @players = [] of Player
     playersTotal.times do |i|
       @players << Player.new("p#{i}",i)
@@ -129,8 +130,7 @@ class Game
   def buy_command(value : JSON::Any, playerid : Int32) : CommandErrors
     begin
       target = value["target"]
-      buy = value["build"]
-      param = value["param"]
+      buy = value["buy"]
     rescue
       return CommandErrors::MissingJSONKey
     end
@@ -141,14 +141,13 @@ class Game
     begin
       targetvec = Vector2.new(target[0].as_i, target[1].as_i)
       buystr = buy.as_s
-      paramstr = param.as_i
       if(map.cities[targetvec] == nil)
         return CommandErrors::InvalidTarget
       end
     rescue
       return CommandErrors::InvalidTarget
     end
-    return map.cities[targetvec].buy_helper(buystr, paramstr)
+    return map.cities[targetvec].buy_helper(buystr)
   end
 
   def build_command(value : JSON::Any, playerid : Int32) : CommandErrors
@@ -223,12 +222,7 @@ class Game
     
   end
 
-  def accept_command(command : String) : CommandErrors
-    begin
-      value = JSON.parse(command)
-    rescue
-      return CommandErrors::InvalidJSON
-    end
+  def accept_command(value : JSON::Any) : CommandErrors
 
     begin
       command = value["command"]
@@ -257,6 +251,10 @@ class Game
     if (command == "transfer")
       return transfer_command(value, player)
     end
+    if (command == "endturn")
+      process_turn_start(player)
+      return CommandErrors::NoError
+    end
     return CommandErrors::MissingJSONKey
   end
 
@@ -274,6 +272,7 @@ class Game
             player.bitcoin += HOMMCONSTS::CITY_BITCOIN_INCOME_LEVEL3
           end
         end
+        city.refresh_units()
       end
       
       # farm income
@@ -291,6 +290,7 @@ class Game
     @map.cities.each do |pos, city|
       city.built = false
     end
+    @day += 1
   end
 
   def get_hero_at(tpos : Vector2) : Hero | Nil
@@ -340,6 +340,7 @@ class Game
         json.field "farms", farms_jsonable()
         json.field "players", @players
         json.field "heroes", heroes_jsonable()
+        json.field "day", @day
       end
     end
   end

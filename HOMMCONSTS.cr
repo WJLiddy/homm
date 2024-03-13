@@ -36,7 +36,7 @@ module HOMMCONSTS
     LEVEL2_MEME_COST_POT = 7
 
     LEVEL3_MEME_COST_BITCOIN = 60
-    LEVEL3_MEME_COST_POT = 10
+    LEVEL3_MEME_COST_POT = 9
 
 
     # Building Costs (rangers)
@@ -57,7 +57,7 @@ module HOMMCONSTS
     # Building Costs (wizard)
     TIER5_BUILDING_COST_BITCOIN = 35
     TIER5_BUILDING_COST_POT = 5
-    TIER5_BUILDING_COST_CEREAL = 10
+    TIER5_BUILDING_COST_CEREAL = 9
 
     # Unit Data
     TIER1_COST = 1
