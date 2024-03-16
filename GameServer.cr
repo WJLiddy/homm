@@ -3,12 +3,20 @@ require "http/request"
 require "json"
 require "./Game"
 
-# Start two player game with one hero
-game = Game.new(0, 2)
+# Start two player game with team size "1"
+# ALWAYS even vs odd players
+game = Game.new(1, ARGV[0].to_i)
+
+last_tick_time = Time.monotonic
 
 server = HTTP::Server.new do |context|
   # get the request.
   rawvalues = context.request.body.as(IO).gets_to_end
+
+  # check if battle should tick. (this is a terrible, terrible, awful hack)
+  if(Time.monotonic - last_tick_time > 1.second)
+    game.runbattles()
+  end
 
   # nasty fix, but user just wanted update
   if(rawvalues == "")

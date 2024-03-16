@@ -5,7 +5,7 @@ def colorize_team(string : String, playerID : Int32 | Nil)
   if(playerID == nil)
     return string.colorize(:white)
   end
-  colors = [:blue, :red, :green, :yellow, :magenta, :cyan]
+  colors = [:blue, :red, :green, :yellow, :magenta, :white]
   return string.colorize(colors[playerID.as(Int32)])
 end
 
@@ -64,6 +64,7 @@ end
 
 # shorthand for move event
 def move(player, target, delta)
+  JSON.parse(
   JSON.build do |json|
     json.object do
       json.field "command", "move"
@@ -81,11 +82,12 @@ def move(player, target, delta)
         end
       end
     end
-  end
+  end)
 end
 
 # shorthand for buy
 def buy(player, target, delta)
+  JSON.parse(
   JSON.build do |json|
     json.object do
       json.field "command", "buy"
@@ -99,11 +101,12 @@ def buy(player, target, delta)
         end
       end
     end
-  end
+  end)
 end
 
 # shorthand for build
 def build(player, target, build)
+  JSON.parse(
   JSON.build do |json|
     json.object do
       json.field "command", "build"
@@ -117,88 +120,31 @@ def build(player, target, build)
       end
     end
   end
+  )
+end
+
+
+# shorthand for build
+def endturn(player)
+  JSON.parse(
+  JSON.build do |json|
+    json.object do
+      json.field "command", "endturn"
+      json.field "player", player
+    end
+  end
+  )
 end
 
 
 
-# Start two player game with one hero
-g = Game.new(0, 2)
-g.process_turn_start(0)
+# Start six player game
+g = Game.new(0, 1)
+
+100000.times do
+  # accept random commands
+  g.accept_command(move(rand(6), Vector2.new(rand(30),rand(30)) , Vector2.new(rand(3) - 1, rand(3) - 1)))
+  g.accept_command(endturn(rand(6)))
+end
+
 print_world_map(g)
-
-
-# first move:
-puts(g.accept_command(move(0,  Vector2.new(1, 3), Vector2.new(1, -1))))
-puts(g.accept_command(move(0,  Vector2.new(2, 2), Vector2.new(1, 1))))
-puts(g.accept_command(move(0,  Vector2.new(3, 3), Vector2.new(1, 1))))
-puts(g.accept_command(move(0,  Vector2.new(4, 4), Vector2.new(1, 1))))
-# gets a bitcoin pickupable.
-puts(g.accept_command(move(0,  Vector2.new(5, 5), Vector2.new(1, 1))))
-
-# second move:
-g.process_turn_start(0)
-puts(g.players[0])
-
-# gets a cereal mine
-puts(g.accept_command(move(0,  Vector2.new(6, 6), Vector2.new(1, 1))))
-
-puts(g.accept_command(move(0,  Vector2.new(7, 7), Vector2.new(1, -1))))
-puts(g.accept_command(move(0,  Vector2.new(8, 6), Vector2.new(1, -1))))
-puts(g.accept_command(move(0,  Vector2.new(9, 5), Vector2.new(-1, 0))))
-puts(g.accept_command(move(0,  Vector2.new(8, 5), Vector2.new(-1, 0))))
-# gets a bitcoin mine.
-
-puts(g.players[0].print)
-# third move:
-g.process_turn_start(0)
-print_world_map(g)
-
-g.process_turn_start(0)
-g.process_turn_start(0)
-g.process_turn_start(0)
-g.process_turn_start(0)
-puts(g.players[0].print)
-g.process_turn_start(0)
-puts(g.players[0].print)
-print_world_map(g)
-
-
-# order some city commands
-puts(g.accept_command(build(0,  Vector2.new(1, 3), "range")))
-puts(g.accept_command(build(0,  Vector2.new(1, 3), "range")))
-g.process_turn_start(0)
-puts(g.players[0].print)
-puts(g.accept_command(build(0,  Vector2.new(1, 3), "datacenter")))
-g.process_turn_start(0)
-puts(g.players[0].print)
-puts(g.accept_command(build(0,  Vector2.new(1, 3), "datacenter")))
-g.process_turn_start(0)
-puts(g.players[0].print)
-g.process_turn_start(0)
-puts(g.players[0].print)
-puts("trying for walls")
-puts(g.accept_command(build(0,  Vector2.new(1, 3), "walls")))
-g.process_turn_start(0)
-puts(g.accept_command(build(0,  Vector2.new(1, 3), "walls")))
-puts(g.players[0].print)
-g.process_turn_start(0)
-puts(g.accept_command(build(0,  Vector2.new(1, 3), "walls")))
-g.process_turn_start(0)
-g.process_turn_start(0)
-g.process_turn_start(0)
-g.process_turn_start(0)
-g.process_turn_start(0)
-g.process_turn_start(0)
-g.process_turn_start(0)
-g.process_turn_start(0)
-g.process_turn_start(0)
-g.process_turn_start(0)
-puts("walls again")
-puts(g.accept_command(build(0,  Vector2.new(1, 3), "walls")))
-puts(g.players[0].print)
-puts(g.accept_command(build(0,  Vector2.new(1, 3), "library")))
-puts(g.accept_command(build(0,  Vector2.new(1, 3), "walls")))
-puts(g.accept_command(build(0,  Vector2.new(1, 3), "stables")))
-puts(g.accept_command(build(0,  Vector2.new(1, 3), "workshop")))
-puts(g.accept_command(build(0,  Vector2.new(1, 3), "school")))
-puts(g.get_gamestate_json())

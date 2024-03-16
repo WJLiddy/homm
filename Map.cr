@@ -19,7 +19,7 @@ class Map
   getter spawn : Array(Vector2)
 
   def initialize(seed : Int32, @playersPerTeam : Int32, hr : HommRandom)
-    @size = @playersPerTeam * 18
+    @size = 15 + @playersPerTeam * 7
     @hr = hr
 
     # generate map. We will only edit the left half tho
@@ -59,16 +59,17 @@ class Map
 
   def spawn_cities
     # cities. later, make sure that all of them can be connected.
-    # 1v1 : 2
-    # 2v2 : 3~4
-    # 3v3 : 4~6
-    citycount = 1 + @playersPerTeam + @hr.rint(0, @playersPerTeam)
+    # 1v1 : 4
+    # 2v2 : 6
+    # 3v3 : 6
+    citycount = Math.min(3,1 + @playersPerTeam)
     citycount.times do |c|
       xmin = ((@size/2) * (c/citycount)).to_i
       xmax = ((@size/2) * ((c + 1)/citycount)).to_i - 2
       pos = Vector2.new(@hr.rint(xmin, xmax), @hr.rint(0, @size))
       @cities[pos] = City.new
       @spawn << pos
+      @tiles[pos.x][pos.y] = TileType::Open
       # assign this city to a player.
     end
   end

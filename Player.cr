@@ -11,6 +11,8 @@ class Player
     property team : Bool
     @[JSON::Field(ignore:true)]
     getter heroes : Hash(Vector2, Hero)
+    property name : String
+    property ended_turn : Bool
     
     def initialize(name : String, team : Bool)
         @name = name
@@ -19,6 +21,7 @@ class Player
         @cereal = 0
         @team = team
         @heroes = Hash(Vector2, Hero).new
+        @ended_turn = team
     end
 
     def print

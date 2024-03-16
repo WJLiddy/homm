@@ -19,9 +19,11 @@ def printBattle(b : Battle)
 end
 # test battle
 leftHero = Hero.new(Player.new("a",false),0,0,3,2)
+leftHero.unit_stacks = [30,0,0,0,0]
 rightHero = Hero.new(Player.new("b",true),0,0,3,2)
-battle = Battle.new(leftHero, rightHero)
-100.times do 
+battle = Battle.new(leftHero, rightHero, "test")
+10.times do
     battle.tick()
+    printBattle(battle)
 end
-printBattle(battle)
+print(battle.get_battle_json())
