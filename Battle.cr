@@ -101,6 +101,8 @@ class Battle
             end
             rx_ptr += 1
         end
+        @leftHero = leftHero
+        @rightHero = rightHero
     end
 
     def movevert(x : Int32, y : Int32, pol : Int32, arena_next : Array(Array(BattleUnit | Nil))) : Bool
@@ -131,18 +133,18 @@ class Battle
     end
 
     # probably should have array'd these lol
-    def get_damage_for_unit(tier : Int32) : Int32
+    def get_damage_for_unit(tier : Int32, bonus) : Int32
         case tier
         when 0
-            return HOMMCONSTS::TIER1_DAMAGE
+            return HOMMCONSTS::TIER1_DAMAGE + rand(HOMMCONSTS::TIER1_DAMAGE_RAND) + bonus
         when 1
-            return HOMMCONSTS::TIER2_DAMAGE
+            return HOMMCONSTS::TIER2_DAMAGE + rand(HOMMCONSTS::TIER2_DAMAGE_RAND) + bonus
         when 2
-            return HOMMCONSTS::TIER3_DAMAGE
+            return HOMMCONSTS::TIER3_DAMAGE + rand(HOMMCONSTS::TIER3_DAMAGE_RAND) + bonus
         when 3
-            return HOMMCONSTS::TIER4_DAMAGE
+            return HOMMCONSTS::TIER4_DAMAGE + rand(HOMMCONSTS::TIER4_DAMAGE_RAND) + bonus
         when 4
-            return HOMMCONSTS::TIER5_DAMAGE
+            return HOMMCONSTS::TIER5_DAMAGE + rand(HOMMCONSTS::TIER5_DAMAGE_RAND) + bonus
         end
         return 0
     end
@@ -150,9 +152,19 @@ class Battle
     def attack(x : Int32, y : Int32, pol : Int32, arena_next : Array(Array(BattleUnit | Nil))) : Bool
         unittype = @arena[x][y].as(BattleUnit).tier
 
+        # find bonus
+        if(@arena[x][y].as(BattleUnit).team == 0 % rand(10) == 0)
+            bonus = @leftHero.attack_stat - @rightHero.health_stat
+        end
+
+        if(@arena[x][y].as(BattleUnit).team == 1 % rand(10) == 0)
+            bonus = @rightHero.attack_stat - @leftHero.health_stat
+        end
+        
         if((unittype == 0 || unittype == 2) && arena_next[x+pol][y] != nil && (arena_next[x+pol][y].as(BattleUnit).team != @arena[x][y].as(BattleUnit).team))
+                  
             # attack
-            arena_next[x+pol][y].as(BattleUnit).hp -= get_damage_for_unit(@arena[x][y].as(BattleUnit).tier)
+            arena_next[x+pol][y].as(BattleUnit).hp -= get_damage_for_unit(@arena[x][y].as(BattleUnit).tier, bonus)
             @attacks.push([@arena[x][y].as(BattleUnit).id,x+pol,y])
             # kill will be cleaned up when we move forward..
             arena_next[x][y] = @arena[x][y]
@@ -167,7 +179,7 @@ class Battle
 
                 if(arena_next[x+(pol*fwd)][y] != nil && (arena_next[x+(pol*fwd)][y].as(BattleUnit).team != @arena[x][y].as(BattleUnit).team))
                     # attack
-                    arena_next[x+(pol*fwd)][y].as(BattleUnit).hp -= get_damage_for_unit(@arena[x][y].as(BattleUnit).tier)
+                    arena_next[x+(pol*fwd)][y].as(BattleUnit).hp -= get_damage_for_unit(@arena[x][y].as(BattleUnit).tier, bonus)
                     @attacks.push([@arena[x][y].as(BattleUnit).id,x+pol,y])
                     # kill will be cleaned up when we move forward..
                     arena_next[x][y] = @arena[x][y]

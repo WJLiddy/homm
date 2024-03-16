@@ -9,10 +9,14 @@ game = Game.new(1, ARGV[0].to_i)
 
 last_tick_time = Time.monotonic
 
+mutex = Mutex.new
+
 server = HTTP::Server.new do |context|
   # get the request.
   rawvalues = context.request.body.as(IO).gets_to_end
 
+  mutex.lock
+  
   # check if battle should tick. (this is a terrible, terrible, awful hack)
   if(Time.monotonic - last_tick_time > 1.second)
     game.runbattles()
@@ -21,6 +25,7 @@ server = HTTP::Server.new do |context|
   # nasty fix, but user just wanted update
   if(rawvalues == "")
     context.response.print game.get_gamestate_json
+    mutex.unlock
     next
   end
   # parse the request
@@ -38,9 +43,10 @@ server = HTTP::Server.new do |context|
   end
 
   context.response.print game.get_gamestate_json
+  mutex.unlock
 end
 
-address = server.bind_tcp 7775
+address = server.bind_tcp "0.0.0.0", 7775
 puts "Listening on http://#{address}"
 server.listen
 

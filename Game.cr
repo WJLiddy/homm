@@ -133,8 +133,6 @@ class Game
     end
     
 
-
-
     # terrain is open
     if(@map.is_open_terrain?(newpos) == false)
       return CommandErrors::InvalidMove
@@ -146,6 +144,12 @@ class Game
       if(get_hero_at(newpos).as(Hero).player == players[playerid])
         return CommandErrors::InvalidMove
       else
+        # check if unit is already battling
+        @battles.each do |b|
+          if(b[0] == newpos || b[1] == newpos)
+            return CommandErrors::InvalidMove
+          end
+        end
         # battle!
         dispstr = "Watch Battle:\n#{get_hero_at(targetvec).as(Hero).player.name} vs.\n#{get_hero_at(newpos).as(Hero).player.name}"
         @battles << {targetvec, newpos, Battle.new(get_hero_at(targetvec).as(Hero), get_hero_at(newpos).as(Hero),dispstr)}
