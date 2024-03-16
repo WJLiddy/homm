@@ -85,9 +85,9 @@ class Map
 
   def spawn_farms
     # add bitcoin, pot, cereal farms
-    bitcoin_farm_count = @hr.rint(2*@playersPerTeam, 4*@playersPerTeam)
-    pot_farm_count = @hr.rint(2*@playersPerTeam, 3*@playersPerTeam)
-    cereal_farm_count = @hr.rint(2*@playersPerTeam, 3*@playersPerTeam)
+    bitcoin_farm_count = 2*@playersPerTeam
+    pot_farm_count = 2*@playersPerTeam
+    cereal_farm_count = 2*@playersPerTeam
 
     bitcoin_farm_count.times do |t|
       pos = random_open_tile

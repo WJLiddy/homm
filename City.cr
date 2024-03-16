@@ -122,7 +122,7 @@ class City
     def transfer_helper(type : Int32, hero : Hero, dir : Bool) : Game::CommandErrors
 
         # transfer from city to hero
-        if(@units_garrisoned[type] > 0 && dir)
+        if(@units_garrisoned[type] > 0 && dir && hero.unit_stacks.sum < 100)
             hero.unit_stacks[type] += 1 
             @units_garrisoned[type] -= 1
             return Game::CommandErrors::NoError
@@ -198,13 +198,13 @@ class City
        when "inf"
             return trybuild(!(@unit_unlocks[0] && @units_available[0] > 0 && try_purchase(HOMMCONSTS::TIER1_COST,0,0)), ->{train_unit(0)})
         when "arc"
-            return trybuild(!(@unit_unlocks[1] && @units_available[1] > 0 && try_purchase(HOMMCONSTS::TIER2_COST,0,0)), ->{train_unit(1)})
+            return trybuild(!(@unit_unlocks[1] && @units_available[1] > 0 && try_purchase(HOMMCONSTS::TIER2_COST,HOMMCONSTS::TIER2_WEED,HOMMCONSTS::TIER2_CEREAL)), ->{train_unit(1)})
         when "cav"
-            return trybuild(!(@unit_unlocks[2] && @units_available[2] > 0 && try_purchase(HOMMCONSTS::TIER3_COST,0,0)), ->{train_unit(2)})
+            return trybuild(!(@unit_unlocks[2] && @units_available[2] > 0 && try_purchase(HOMMCONSTS::TIER3_COST,HOMMCONSTS::TIER2_WEED,HOMMCONSTS::TIER3_CEREAL)), ->{train_unit(2)})
         when "bal"
-            return trybuild(!(@unit_unlocks[3] && @units_available[3] > 0 && try_purchase(HOMMCONSTS::TIER4_COST,0,0)), ->{train_unit(3)})
+            return trybuild(!(@unit_unlocks[3] && @units_available[3] > 0 && try_purchase(HOMMCONSTS::TIER4_COST,HOMMCONSTS::TIER2_WEED,HOMMCONSTS::TIER4_CEREAL)), ->{train_unit(3)})
         when "wiz"
-            return trybuild(!(@unit_unlocks[4] && @units_available[4] > 0 && try_purchase(HOMMCONSTS::TIER5_COST,0,0)), ->{train_unit(4)})
+            return trybuild(!(@unit_unlocks[4] && @units_available[4] > 0 && try_purchase(HOMMCONSTS::TIER5_COST,HOMMCONSTS::TIER2_WEED,HOMMCONSTS::TIER5_CEREAL)), ->{train_unit(4)})
         end
         # we can buy any of the 5 base units.
         return Game::CommandErrors::InvalidTarget

@@ -14,6 +14,8 @@ class Game
     Cereal
   end
 
+  @@DEBUG = true
+
   enum CommandErrors
     NoError
     InvalidJSON
@@ -141,7 +143,7 @@ class Game
     battling = nil
     # no moving through friendlies
     if(get_hero_at(newpos) != nil)
-      if(get_hero_at(newpos).as(Hero).player == players[playerid])
+      if(get_hero_at(newpos).as(Hero).player.team == players[playerid].team)
         return CommandErrors::InvalidMove
       else
         # check if unit is already battling
@@ -219,7 +221,8 @@ class Game
       return CommandErrors::InvalidTarget
     end
     # hero?
-    if(buystr == "hero" && get_hero_at(targetvec) == nil && @availableHeroes.size > 0 && player.heroes.size < 3)
+    if(buystr == "hero" && get_hero_at(targetvec) == nil && @availableHeroes.size > 0 && player.heroes.size < 3 && player.bitcoin >= HOMMCONSTS::HERO_COST)
+      player.bitcoin -= HOMMCONSTS::HERO_COST
       h = get_random_hero()
       player.heroes[targetvec] = Hero.new(player,h[0],h[1],h[2],h[3])
       return CommandErrors::NoError
@@ -359,10 +362,12 @@ class Game
       @players[player].ended_turn = true
 
       # debug hack
-      # process_turn_start()
-      # process_turn_start()
-      # @players[player].ended_turn = false
-      # return CommandErrors::NoError
+      if(@@DEBUG)
+        process_turn_start()
+        process_turn_start()
+        @players[player].ended_turn = false
+        return CommandErrors::NoError
+      end
       # end
 
       # later ->
@@ -489,21 +494,19 @@ class Game
       if(attacker_alive && !defender_alive)
         finishbattles << i
         # kill defender, end battle
-        @players.each do |player|
-          player.heroes.delete(battle[1])
-            # later- return hero to pool
-            get_hero_at(battle[0]).as(Hero).unit_stacks = battle[2].getstackcount(0)
-        end
+        oldh = get_hero_at(battle[1]).as(Hero)
+        oldh.player.heroes.delete(battle[1])
+        get_hero_at(battle[0]).as(Hero).unit_stacks = battle[2].getstackcount(0)
+        @availableHeroes << {oldh.id,oldh.move_stat,oldh.health_stat,oldh.attack_stat}
       end
 
       # kill attacker, end battle
       if(!attacker_alive && defender_alive)     
         finishbattles << i
-        @players.each do |player|
-          player.heroes.delete(battle[0])
-          get_hero_at(battle[1]).as(Hero).unit_stacks = battle[2].getstackcount(1)
-          # later- return hero to pool
-        end
+        oldh = get_hero_at(battle[0]).as(Hero)
+        oldh.player.heroes.delete(battle[0])
+        get_hero_at(battle[1]).as(Hero).unit_stacks = battle[2].getstackcount(1)
+        @availableHeroes << {oldh.id,oldh.move_stat,oldh.health_stat,oldh.attack_stat}
       end
     end
 
