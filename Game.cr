@@ -359,10 +359,10 @@ class Game
       @players[player].ended_turn = true
 
       # debug hack
-      process_turn_start()
-      process_turn_start()
-      @players[player].ended_turn = false
-      return CommandErrors::NoError
+      # process_turn_start()
+      # process_turn_start()
+      # @players[player].ended_turn = false
+      # return CommandErrors::NoError
       # end
 
       # later ->
