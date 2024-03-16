@@ -20,6 +20,7 @@ server = HTTP::Server.new do |context|
   # check if battle should tick. (this is a terrible, terrible, awful hack)
   if(Time.monotonic - last_tick_time > 1.second)
     game.runbattles()
+    last_tick_time = Time.monotonic
   end
 
   # nasty fix, but user just wanted update
