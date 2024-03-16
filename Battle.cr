@@ -133,7 +133,7 @@ class Battle
     end
 
     # probably should have array'd these lol
-    def get_damage_for_unit(tier : Int32, bonus) : Int32
+    def get_damage_for_unit(tier : Int32, bonus : Int32) : Int32
         case tier
         when 0
             return HOMMCONSTS::TIER1_DAMAGE + rand(HOMMCONSTS::TIER1_DAMAGE_RAND) + bonus
@@ -152,12 +152,13 @@ class Battle
     def attack(x : Int32, y : Int32, pol : Int32, arena_next : Array(Array(BattleUnit | Nil))) : Bool
         unittype = @arena[x][y].as(BattleUnit).tier
 
+        bonus = 0
         # find bonus
-        if(@arena[x][y].as(BattleUnit).team == 0 % rand(10) == 0)
+        if(@arena[x][y].as(BattleUnit).team == 0 && rand(10) == 0)
             bonus = @leftHero.attack_stat - @rightHero.health_stat
         end
 
-        if(@arena[x][y].as(BattleUnit).team == 1 % rand(10) == 0)
+        if(@arena[x][y].as(BattleUnit).team == 1 && rand(10) == 0)
             bonus = @rightHero.attack_stat - @leftHero.health_stat
         end
         

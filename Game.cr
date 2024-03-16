@@ -218,7 +218,14 @@ class Game
     rescue
       return CommandErrors::InvalidTarget
     end
-    return map.cities[targetvec].buy_helper(buystr)
+    # hero?
+    if(buystr == "hero" && get_hero_at(targetvec) == nil && @availableHeroes.size > 0 && player.heroes.size < 3)
+      h = get_random_hero()
+      player.heroes[targetvec] = Hero.new(player,h[0],h[1],h[2],h[3])
+      return CommandErrors::NoError
+    else
+      return map.cities[targetvec].buy_helper(buystr)
+    end
   end
 
   def build_command(value : JSON::Any, playerid : Int32) : CommandErrors
@@ -240,12 +247,6 @@ class Game
       build_str = build.as_s
     rescue
       return CommandErrors::InvalidTarget
-    end
-
-    # hero?
-    if(build_str == "hero" && get_hero_at(targetvec) == nil && @availableHeroes.size > 0)
-      h = get_random_hero()
-      player.heroes[targetvec] = Hero.new(player,h[0],h[1],h[2],h[3])
     end
 
     return map.cities[targetvec].build_helper(build_str)

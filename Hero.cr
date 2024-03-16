@@ -6,6 +6,8 @@ class Hero
   # don't need to serialize the player
   @[JSON::Field(ignore:true)]
   property player : Player
+  property attack_stat : Int32
+  property health_stat : Int32
   
   def initialize(player : Player, id : Int32, move : Int32, health : Int32, attack : Int32)
     @move_points = 7
