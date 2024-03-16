@@ -14,7 +14,7 @@ class Game
     Cereal
   end
 
-  @@DEBUG = true
+  @@DEBUG = false
 
   enum CommandErrors
     NoError
